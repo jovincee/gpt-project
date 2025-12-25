@@ -12,11 +12,11 @@ import { useAppContext } from './context/AppContext'
 
 const App = () => {
 
-  const {user} = useAppContext()
+  const {user, loadingUser} = useAppContext()
 
   const {pathname} = useLocation()
 
-  if (pathname === '/loading') return <Loading />
+  if (pathname === '/loading' || loadingUser) return <Loading />
 
   return (
     <>

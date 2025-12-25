@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { useAppContext } from '../context/AppContext'
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, CircleUser, Moon, Sun, User, ChevronLeft, ChevronRight, Plus, Search, Image, Coins } from "lucide-react";
+import { LogOut, MessageCircle, CircleUser, Moon, Sun, User, ChevronLeft, ChevronRight, Plus, Search, Image, Coins } from "lucide-react";
 import SidebarItem from './SidebarItem';
 import moment from 'moment';
 import { nanoid } from "nanoid";
+
 
 
 
@@ -12,9 +13,38 @@ const Sidebar = () => {
   //this is the Sidebar component
 
   //initialize any state variables; some variables are retrieved from AppContext
-  const {chats, setSelectedChat,  darkMode, setDarkMode, user, navigate, setActiveChatTitle, activeItem, setActiveItem} = useAppContext()
+  const {chats, setSelectedChat,  darkMode, setDarkMode, user, navigate, setActiveChatTitle, activeItem, setActiveItem,
+    createNewChat, axios, setChats, fetchUsersChats, setToken
+  } = useAppContext()
   const [search, setSearch] = useState('')  //initially set at empty string
   const [isExpanded, setIsExpanded] = useState(false);
+
+
+  // Logout functionality:
+  const logout = () => {
+    localStorage.removeItem("token");
+    setToken(null);
+    toast.success('Logged out successfully');
+  }
+
+  // delete chat:
+  const deleteChat = async (e, chatId) => {
+    try{
+      e.stopPropagation();
+      const confirm = window.confirm("Are you sure you want to delete this chat?");
+      if(!confirm) return;
+      const {data} = await axios.delete(`/api/chat/delete/${chatId}`, {headers: {Authorization: `Bearer ${token}`}})
+      if(data.success){ 
+        setChats(prev => prev.filter(chat => chat._id !== chatId));
+        await fetchUsersChats();
+        toast.success(data.message)
+      }
+    } catch(error) {
+      toast.error(error.message)
+
+    }
+  }
+  
   
   
   //top sidebar items:
@@ -27,7 +57,7 @@ const Sidebar = () => {
   const botMenuItems = [
     { icon: <CircleUser size={20} className="text-black dark:text-gray-500" />, id: "userPage",  text: `${user?.name}`, caption: null, clickAction:  () => {} },
     { icon: <Image size={20} className="text-black dark:text-gray-500" />, id: "community",  text: "Community Images", caption: null, route: '/community' },
-    
+    { icon: <LogOut size={20} className="text-black dark:text-gray-500" />, id: "logout",  text: "Logout", caption: null, route: '/' },
   ]
 
   //use effect for rendering user chats
@@ -114,39 +144,49 @@ const Sidebar = () => {
         ))}
     
           
+        {/** Sidebar Chat items (on expanded) */}
+    {chats.length > 0 && isExpanded && (
+      <p className="mt-4 text-center font-bold text-sm text-black dark:text-white">
+        Recent Chats
+      </p>
+    )}
 
+    {chats
+      .filter((chat) => {
+        const searchTerm = search.toLowerCase();
 
-        
-        
+        // Use first message content if it exists
+        if (chat.messages?.length > 0 && chat.messages[0]?.content) {
+          return chat.messages[0].content
+            .toLowerCase()
+            .includes(searchTerm);
+        }
 
-        {/**Sidebar Chat items (on expanded) */}
-        {chats.length > 0 && isExpanded && <p className='mt-4 text-center font-bold text-sm text-black dark:text-white'>Recent Chats</p>}
-        {chats.filter((chat) => chat.messages[0] ? 
-        chat.messages[0]?.content.toLowerCase().includes(search.toLowerCase()) : 
-        chat.name.toLowerCase().includes(search.toLowerCase())).map((chat)=>(
-          
-          <SidebarItem 
+        // Fallback label for empty chats
+        return "new chat".includes(searchTerm);
+      })
+      .map((chat) => {
+        const hasMessages = chat.messages?.length > 0;
+        const firstMessage = hasMessages ? chat.messages[0].content : null;
+
+        return (
+          <SidebarItem
             key={chat._id}
-            icon={<MessageCircle size={20} className="text-black dark:text-gray-500"/>}
-            text={chat.messages.length > 0 ? chat.messages[0].content.slice(0,32) : chat.name}
+            icon={<MessageCircle size={20} className="text-black dark:text-gray-500" />}
+            text={hasMessages ? firstMessage.slice(0, 32) : "New Chat"}
             caption={moment(chat.updatedAt).fromNow()}
             expanded={isExpanded}
             isChat={true}
             isActive={activeItem === chat._id}
-            clickAction={()=> {navigate('/'); setSelectedChat(chat); setActiveItem(chat._id); 
-              if (chat.messages[0]){
-                setActiveChatTitle(chat.messages[0].content)
-              }
-              else{
-                setActiveChatTitle(" ")  
-              }
-            
+            clickAction={() => {
+              navigate('/');
+              setSelectedChat(chat);
+              setActiveItem(chat._id);
+              setActiveChatTitle(hasMessages ? firstMessage : "New Chat");
             }}
           />
-
-
-
-        ))}
+        );
+      })}
 
       {/**Bottom Section must be anchored at the very bottom */}
       <div className="flex flex-col absolute bottom-30 left-0 gap-1 mb-4">
@@ -160,8 +200,11 @@ const Sidebar = () => {
             isActive={activeItem === item.id}
             clickAction={() => {
               navigate(item.route);
+              if(item.id === "logout"){
+                logout(); 
+                return;
+              }
               setActiveItem(item.id);
-
             }}
           />
         ))}
