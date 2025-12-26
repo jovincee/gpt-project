@@ -13,7 +13,7 @@ const ChatBox = () => {
 
 
   //initialize app context and message state here:
-  const { selectedChat, darkMode, setDarkMode, activeChatTitle, user, axios, token, setUser } = useAppContext()
+  const { selectedChat, darkMode, setDarkMode, activeChatTitle, user, axios, token, setUser, fetchUsersChats } = useAppContext()
 
   //state variables for messages and loading:
   const [messages, setMessages] = useState([])
@@ -103,6 +103,8 @@ const ChatBox = () => {
     toast.error(err.response?.data?.message || "Failed to send message");
   } finally {
     setLoading(false);
+    
+    await fetchUsersChats();
   }
 };
 

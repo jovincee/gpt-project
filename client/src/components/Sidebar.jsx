@@ -115,14 +115,14 @@ const Sidebar = () => {
             isChat={false}
             isActive={activeItem === item.id}
 
-            clickAction={() => {
+            clickAction={async () => {
               console.log("clicked");
           
               navigate(item.route);
               if (item.id === 'newChat') {
 
-                createNewChat();
-                fetchUsersChats();
+                await createNewChat();
+                await fetchUsersChats();
 
                 return;
               }
