@@ -12,18 +12,19 @@ const ChatBox = () => {
   const containerRef = useRef(null)
 
 
+
   //initialize app context and message state here:
   const { selectedChat, darkMode, setDarkMode, activeChatTitle, setActiveChatTitle, user, axios, token, setUser, fetchUsersChats } = useAppContext()
 
   //state variables for messages and loading:
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(false)
-  const [prompt, setPrompt] = useState("")
   const [isPublished, setIsPublished] = useState(false)
   // const [loading, setLoading] = useState(true)
   const [input, setInput] = useState("");
   const [activateDropdown, setActivateDropdown] = useState(false)
   const [mode, setMode] = useState(() => localStorage.getItem("chatMode") || "text");
+
 
   
 

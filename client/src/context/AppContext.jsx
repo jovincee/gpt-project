@@ -30,7 +30,7 @@ export const AppContextProvider = ({ children })=>{
         const stored = localStorage.getItem("darkMode");
         return stored ? JSON.parse(stored) : false;
     });
-    const [activeChatTitle, setActiveChatTitle] = useState(dummyChats[0].messages[0].content || " ");
+    const [activeChatTitle, setActiveChatTitle] = useState(" ");
     const [activeItem, setActiveItem] = useState("");
     const [token, setToken] = useState(localStorage.getItem("token") || null);
     const [loadingUser, setLoadingUser] = useState(true);
@@ -130,6 +130,10 @@ export const AppContextProvider = ({ children })=>{
     }
 
     setChats(data.chats);
+    
+    if (activeChatTitle === " " && data.chats.length > 0) {
+      setActiveChatTitle(data.chats[0].messages[0]?.content || " ");
+    }
 
     if (data.chats.length > 0) {
       setSelectedChat(data.chats[0]);

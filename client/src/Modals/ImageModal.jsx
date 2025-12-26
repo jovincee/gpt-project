@@ -1,5 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
+import { useAppContext } from "../context/AppContext";
+import { useEffect, useState } from "react";
 
 const backdropVariants = {
   hidden: { opacity: 0 },
@@ -13,6 +15,30 @@ const imageVariants = {
 };
 
 const ImageModal = ({ image, onClose }) => {
+  const [imageUrl, setImageUrl] = useState("")
+  const [userName, setUserName] = useState("")
+  const { user } = useAppContext();
+  
+   //useEffect for checking if the image is either fetched from the temporary list of community images or user-generated from API
+  useEffect(() => {
+    if (image?.imageUrl != undefined) {
+      setImageUrl(image.imageUrl);
+    }
+    else {
+      setImageUrl(image);
+    }
+  }, [image])
+
+   //useEffect for checking if the userName is either fetched from the temporary list of community images or user-generated from API
+   useEffect(() => {
+    if (image?.userName != undefined) {
+      setUserName(image.userName);
+    }
+    else {
+      setUserName(user.name);
+    }
+  }, [image])
+
   return (
     <AnimatePresence>
       {image && (
@@ -33,8 +59,9 @@ const ImageModal = ({ image, onClose }) => {
           </button>
 
           {/* Image */}
+          
           <motion.img
-            src={image.imageUrl}
+            src={imageUrl}
             alt={`Posted by ${image.userName}`}
             variants={imageVariants}
             initial="hidden"
@@ -47,7 +74,7 @@ const ImageModal = ({ image, onClose }) => {
 
           {/* Username */}
           <div className="absolute bottom-6 text-white text-sm opacity-90">
-            @{image.userName}
+            @{userName}
           </div>
         </motion.div>
       )}

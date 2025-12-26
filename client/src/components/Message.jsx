@@ -1,11 +1,14 @@
 import React from 'react'
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from "framer-motion";
 import moment from 'moment';
 import Markdown from 'react-markdown';
 import Prism from 'prismjs';
+import ImageModal from '../Modals/ImageModal';
 
 const Message = ({key, message}) => {
+  const [selectedImage, setSelectedImage] = useState(null);
+
   useEffect(()=>{
     Prism.highlightAll()
   }, [message.content])
@@ -33,14 +36,23 @@ const Message = ({key, message}) => {
               <img 
                 src={message.content}
                 alt=""
-                className="rounded-lg max-h-64 w-auto object-contain border border-gray-300 dark:border-gray-700"
+                className="rounded-lg max-h-64 w-auto object-contain border border-gray-300 dark:border-gray-700 cursor-pointer"
+                onClick={() => {
+                  setSelectedImage(message.content)
+                  
+                  
+                }}
+              
+              
               />
+              
              )}
              
              {/**Show timestamp to user */}
             <span className='text-xs text-gray-400 dark:text-[#B1A6C0]'>{moment(message.timestamp).fromNow()}</span>
 
             </div>
+            <ImageModal image={selectedImage} onClose={() => setSelectedImage(null)} />
     </motion.div>
   )
 }
