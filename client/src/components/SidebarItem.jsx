@@ -1,12 +1,16 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
+import { useAppContext } from '../context/AppContext'
+import toast from "react-hot-toast";
 
 
 
 
-const SidebarItem = ({ icon, text, caption, expanded, isChat, isActive, clickAction }) => {
+
+const SidebarItem = ({ chatId, icon, text, caption, expanded, isChat, isActive, clickAction }) => {
   const [hovered, setHovered] = useState(false);
+  const { deleteChat } = useAppContext();
   
   return (
     <motion.div
@@ -47,8 +51,8 @@ const SidebarItem = ({ icon, text, caption, expanded, isChat, isActive, clickAct
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 10 }}
             transition={{ duration: 0.2 }}
-            className="absolute right-3 text-gray-400 hover:text-red-500"
-            onClick={() => alert(`Delete ${text}`)}
+            className="absolute right-3 text-gray-400 hover:text-red-500 cursor-pointer"
+            onClick={(e) => toast.promise(deleteChat(e, chatId), {loading: 'deleting chat...', success: 'chat deleted', error: 'User cancelled deletion'})}
           >
             <Trash2 size={18} />
           </motion.button>

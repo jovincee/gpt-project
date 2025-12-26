@@ -35,7 +35,26 @@ export const AppContextProvider = ({ children })=>{
     const [token, setToken] = useState(localStorage.getItem("token") || null);
     const [loadingUser, setLoadingUser] = useState(true);
     
-    
+    // delete chat:
+    const deleteChat = async (e, chatId) => {
+        try{
+        console.log(`chatId: ${chatId}`);
+        e.stopPropagation();
+        const confirm = window.confirm("Are you sure you want to delete this chat?");
+        if(!confirm) return Promise.reject("Deletion cancelled by user");
+        const {data} = await axios.delete(`/api/chat/delete/${chatId}`, {headers: {Authorization: `Bearer ${token}`}})
+        console.log(data);
+        if(data.success){ 
+            console.log("chat deleted")
+            setChats(prev => prev.filter(chat => chat._id !== chatId));
+            await fetchUsersChats();
+            toast.success(data.message)
+        }
+        } catch(error) {
+            toast.error(error.message)
+
+        }
+    }
 
 
     const fetchUser = async () => {
@@ -59,46 +78,92 @@ export const AppContextProvider = ({ children })=>{
      * 
      */
     const createNewChat = async () => {
-        try{
-            if(!user) return toast('Login to create a new chat')
-            navigate('/')
-            await axios.post('/api/chat/create', {headers: {Authorization: `Bearer ${token}`}})
-            await fetchUsersChats()         //fetch users chats from the backend
-        } catch (error){
-            toast.error(error.message)
-            return;
+        if (!user || !token) {
+            toast.error("Login to create a new chat");
+            return false;
         }
-    }
+
+        try {
+            await axios.post(
+            '/api/chat/create',
+            null, // ✅ IMPORTANT
+            {
+                headers: {
+                Authorization: `Bearer ${token}`,
+                },
+            }
+            );
+
+            toast.success("New chat created");
+
+            return true; // ✅ signal success
+        } catch (error) {
+            if (error.response?.status === 401) {
+            toast.error("Session expired. Please login again.");
+            return false;
+            }
+
+            toast.error(error.message);
+            return false;
+        }
+        };
 
     /**
      * fetchUserChats fetches users chat to the back-end; requires an asynchronous call
      */
-    const fetchUsersChats = async () => {
-        try{
-            const {data} = await axios.get('/api/chat/all', {headers: {Authorization: `Bearer ${token}`}})
-            if (data.success){
-                console.log("nice")
-                setChats(data.chats)
-                //if user has no chats, create a new chat
-                if(data.chats.length === 0){
-                    
-                    await createNewChat();
-                    return fetchUsersChats();
-                }else{
-                    setSelectedChat(data.chats[0])
-                }
-            } else {
-                toast.error(data.message)
-                return;
-            }
+ const fetchUsersChats = async () => {
+  if (!user || !token) return;
 
-        } catch (error){
-            toast.error(error.message)
-        }
+  try {
+    const { data } = await axios.get(
+      '/api/chat/all',
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-        
+    if (!data?.success) {
+      toast.error(data?.message || "Failed to fetch chats");
+      return;
     }
 
+    setChats(data.chats);
+
+    if (data.chats.length > 0) {
+      setSelectedChat(data.chats[0]);
+      return;
+    }
+
+    // ✅ ONLY create once, no recursion
+    const created = await createNewChat();
+    if (!created) return;
+
+    // ✅ ONE controlled refetch
+    const refreshed = await axios.get(
+      '/api/chat/all',
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (refreshed.data?.success) {
+      setChats(refreshed.data.chats);
+      setSelectedChat(refreshed.data.chats[0] || null);
+    }
+
+  } catch (error) {
+    if (error.response?.status === 401) {
+      toast.error("Session expired. Please login again.");
+      return;
+    }
+
+    toast.error(error.message);
+  }
+};
 
     //use effect for rendering user chats
     useEffect(() => {
@@ -133,7 +198,7 @@ export const AppContextProvider = ({ children })=>{
     }, [darkMode]);
 
     const value = {
-        navigate, user, setUser, fetchUser, chats, setChats, selectedChat, setSelectedChat, darkMode, setDarkMode, activeItem, setActiveItem, activeChatTitle, setActiveChatTitle, createNewChat, loadingUser, fetchUsersChats, token, setToken, axios
+        navigate, user, setUser, fetchUser, chats, setChats, selectedChat, setSelectedChat, darkMode, setDarkMode, activeItem, setActiveItem, activeChatTitle, setActiveChatTitle, createNewChat, loadingUser, fetchUsersChats, token, setToken, axios, deleteChat
     }        //value is of datatype object to store data
     
     return (

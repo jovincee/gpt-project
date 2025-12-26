@@ -58,7 +58,7 @@ export const getChats = async (req, res) => {
 //API controller for deleting a chat
 export const deleteChat = async (req, res) =>  {
     try{
-        const {chatId} = req.body;
+        const {chatId} = req.params;
         const userId = req.user._id;
         
         await Chat.deleteOne({ _id: chatId, userId})
@@ -67,6 +67,7 @@ export const deleteChat = async (req, res) =>  {
 
 
     } catch (error){
+        return res.json({success: false, message: error.message})
 
 
     }

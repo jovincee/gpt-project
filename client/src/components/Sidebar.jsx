@@ -27,30 +27,11 @@ const Sidebar = () => {
     toast.success('Logged out successfully');
   }
 
-  // delete chat:
-  const deleteChat = async (e, chatId) => {
-    try{
-      e.stopPropagation();
-      const confirm = window.confirm("Are you sure you want to delete this chat?");
-      if(!confirm) return;
-      const {data} = await axios.delete(`/api/chat/delete/${chatId}`, {headers: {Authorization: `Bearer ${token}`}})
-      if(data.success){ 
-        setChats(prev => prev.filter(chat => chat._id !== chatId));
-        await fetchUsersChats();
-        toast.success(data.message)
-      }
-    } catch(error) {
-      toast.error(error.message)
-
-    }
-  }
-  
-  
   
   //top sidebar items:
   const menuItems = [
-  { icon: <Plus size={20} className="text-black dark:text-gray-500" />, id: nanoid(), text: "New Chat", caption: null, clickAction: {} },
-  { icon: <User size={20} className="text-black dark:text-gray-500" />, id: nanoid(),  text: "Profile", caption: null, clickAction: {} },
+  { icon: <Plus size={20} className="text-black dark:text-gray-500" />, id: 'newChat', text: "New Chat", caption: null, route: '/' },
+  { icon: <User size={20} className="text-black dark:text-gray-500" />, id: nanoid(),  text: "Profile", caption: null, route: '/', clickAction: {} },
   ]
 
   //bottom sidebar items:
@@ -135,9 +116,16 @@ const Sidebar = () => {
             isActive={activeItem === item.id}
 
             clickAction={() => {
-              console.log('here');
+              console.log("clicked");
+          
               navigate(item.route);
-              setActiveItem(item.id);
+              if (item.id === 'newChat') {
+
+                createNewChat();
+                fetchUsersChats();
+
+                return;
+              }
 
             }}
           />
@@ -172,6 +160,7 @@ const Sidebar = () => {
         return (
           <SidebarItem
             key={chat._id}
+            chatId={chat._id}
             icon={<MessageCircle size={20} className="text-black dark:text-gray-500" />}
             text={hasMessages ? firstMessage.slice(0, 32) : "New Chat"}
             caption={moment(chat.updatedAt).fromNow()}
