@@ -13,7 +13,7 @@ const ChatBox = () => {
 
 
   //initialize app context and message state here:
-  const { selectedChat, darkMode, setDarkMode, activeChatTitle, user, axios, token, setUser, fetchUsersChats } = useAppContext()
+  const { selectedChat, darkMode, setDarkMode, activeChatTitle, setActiveChatTitle, user, axios, token, setUser, fetchUsersChats } = useAppContext()
 
   //state variables for messages and loading:
   const [messages, setMessages] = useState([])
@@ -69,6 +69,9 @@ const ChatBox = () => {
 
   setLoading(true);
   setInput("");
+  if (messages.length === 0) {
+    setActiveChatTitle(userPrompt);
+  }
 
   setMessages(prev => [
     ...prev,
@@ -79,8 +82,13 @@ const ChatBox = () => {
       isImage: false,
     },
   ]);
+  
+
+
+
 
   try {
+   
     const { data } = await axios.post(
       `/api/message/${mode}`,
       {
@@ -97,12 +105,13 @@ const ChatBox = () => {
     );
 
     if (data.success) {
-      setMessages(prev => [...prev, data.reply]);
+      setMessages(prev => [...prev, data.reply]);     //append to the list of messages
     }
   } catch (err) {
     toast.error(err.response?.data?.message || "Failed to send message");
   } finally {
     setLoading(false);
+    console.log(messages);
     
     await fetchUsersChats();
   }

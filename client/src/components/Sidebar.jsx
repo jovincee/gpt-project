@@ -117,10 +117,10 @@ const Sidebar = () => {
 
             clickAction={async () => {
               console.log("clicked");
-          
+              
               navigate(item.route);
               if (item.id === 'newChat') {
-
+                setActiveChatTitle("New Chat");
                 await createNewChat();
                 await fetchUsersChats();
 
