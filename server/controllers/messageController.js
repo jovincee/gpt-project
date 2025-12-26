@@ -10,201 +10,133 @@ import axios from "axios";
  * 2. Find chat by chatId and prompt from req.body
 **/
 export const textMessageController = async (req, res) => {
-    try{
-        const userId = req.user._id;
-        const userName = req.user.name;
-        const { chatId, prompt } = req.body;
+  try {
+    const userId = req.user._id;
+    const { chatId, prompt } = req.body;
 
+    if (!prompt?.trim()) {
+      return res.status(400).json({ message: "Prompt is required" });
+    }
 
-        console.log(req);
+    const chat = await Chat.findOne({ _id: chatId, userId });
 
+    if (!chat) {
+      return res.status(404).json({ message: "Chat not found" });
+    }
 
-        //check if prompt exists:
-        if (!prompt) {
-            return res.status(400).json({ message: "Prompt is required" });
-        }
+    // 1️⃣ Save user message
+    const userMessage = {
+      role: "user",
+      content: prompt,
+      timestamp: Date.now(),
+      isImage: false,
+      isPublished: false,
+    };
 
-        const chat =  await Chat.findOne({userId, _id: chatId,});
+    chat.messages.push(userMessage);
 
-        //check if chat exists: 
-        if (!chat) {
-            return res.status(404).json({ message: "Chat not found" });
-        }
+    // 2️⃣ Call Gemini
+    const result = await gemini.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+    });
 
-        //push and save prompt to messages array to the backend
-        chat.messages.push({role: 'user', content: prompt, timestamp: Date.now(), isImage: false, isPublished: false});
+    const aiMessage = {
+      role: "assistant",
+      content: result.text,
+      timestamp: Date.now(),
+      isImage: false,
+      isPublished: false,
+    };
 
-        //call Google Gemini API with prompt and get response; save response to backend
+    chat.messages.push(aiMessage);
 
-        //call Gemini
-        const result = await gemini.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-        });
+    // 3️⃣ Save chat
+    await chat.save();
 
-        const aiResponse = result.text;
+    // 4️⃣ Respond ONCE
+    return res.status(200).json({
+      success: true,
+      reply: aiMessage,
+    });
 
-        //push and save AI response to messages array to the backend
-        chat.messages.push({role: 'assistant', content: aiResponse, timestamp: Date.now(), isImage: false, isPublished: false});
-
-
-        //------------IMAGEKIT INTEGRATION FOR IMAGE GENERATION  ----------------//
-
-        // Encode the prompt
-        const encodedPrompt = encodeURIComponent(prompt);
-
-        //Construct ImageKit AI generation URL
-        const generatedImageUrl = `${process.env.IMAGEKIT_URL_ENDPOINT}/ik-genimg-prompt/${encodedPrompt}/clonegpt/${Date.now()}.png?tr=w-800,h-800`;
-
-        //Trigger generation by fetching from ImageKit
-        const aiImageResponse = await axios.get(generatedImageUrl, {responseType: 'arraybuffer'});
-
-        // Convert to Base64
-        const base64Image = `data:image/png;base64,${Buffer.from(aiImageResponse.data, 'binary').toString('base64')}`;
-
-        // Upload to ImageKit Media Library
-        const uploadResponse = await imagekit.upload({
-            file: base64Image,
-            fileName: `${Date.now()}.png`,
-            folder: "clonegpt"
-        })
-
-        //create a reply and push to array of messages to backend:
-        const reply = {
-            role: 'assistant',
-            content: uploadResponse.url,
-            timestamp: Date.now(),
-            isImage: true,
-            isPublished,
-        }
-
-        res.json({success: true, reply});
-
-        chat.messages.push(reply);
-
-
-        // 5️⃣ Save chat
-        await chat.save();
-
-        // 6️⃣ Return updated chat
-        res.status(200).json({
-            success: true,
-            chat,
-        });
-
-
-
-    } catch (error) {
-        console.error("🔥 FULL ERROR OBJECT:", error);
-        console.error("🔥 ERROR MESSAGE:", error?.message);
-        console.error("🔥 ERROR STACK:", error?.stack);
-
+  } catch (error) {
+    console.error("🔥 TEXT MESSAGE ERROR:", error);
     return res.status(500).json({
-        success: false,
-        error: error?.message || "Unknown error",
+      success: false,
+      message: error.message || "Failed to generate text response",
     });
   }
-
-
-
-
-}
-
-//Text-based AI chat message controller
-/**
- * 1. Get chatId from req.params and message from req.body
- * 2. Find chat by chatId and prompt from req.body
-**/
+};
 export const imageMessageController = async (req, res) => {
-    try{
-        const userId = req.user._id;
-        const userName = req.user.name;
-        const { chatId, prompt, isPublished } = req.body;
+  try {
+    const userId = req.user._id;
+    const { chatId, prompt, isPublished } = req.body;
 
+    if (!prompt?.trim()) {
+      return res.status(400).json({ message: "Prompt is required" });
+    }
 
-        console.log(req);
+    console.log("IMAGEKIT_URL_ENDPOINT:", process.env.IMAGEKIT_URL_ENDPOINT);
 
+    const chat = await Chat.findOne({ _id: chatId, userId });
+    if (!chat) {
+      return res.status(404).json({ message: "Chat not found" });
+    }
 
-        //check if prompt exists:
-        if (!prompt) {
-            return res.status(400).json({ message: "Prompt is required" });
-        }
+    chat.messages.push({
+      role: "user",
+      content: prompt,
+      timestamp: Date.now(),
+      isImage: false,
+      isPublished: false,
+    });
 
-        const chat =  await Chat.findOne({userId, _id: chatId});
+    const encodedPrompt = encodeURIComponent(prompt);
+    const imageUrl = `${process.env.IMAGEKIT_URL_ENDPOINT}/ik-genimg-prompt-${encodedPrompt}/clonegpt/${Date.now()}.png?tr=w-800,h-800`;
 
-        //check if chat exists: 
-        if (!chat) {
-            return res.status(404).json({ message: "Chat not found" });
-        }
+    let imageResponse;
+    try {
+      imageResponse = await axios.get(imageUrl, { responseType: "arraybuffer" });
+    } catch (err) {
+      console.error("❌ ImageKit fetch error:", err.response?.status);
+      throw new Error("Image generation failed");
+    }
 
-        //push and save prompt to messages array to the backend
-        chat.messages.push({
-            role: 'user', 
-            content: prompt, 
-            timestamp: Date.now(), 
-            isImage: false, 
-            isPublished: false});
+    const base64Image = `data:image/png;base64,${Buffer.from(
+      imageResponse.data
+    ).toString("base64")}`;
 
-        //------------IMAGEKIT INTEGRATION FOR IMAGE GENERATION  ----------------//
+    let upload;
+    try {
+      upload = await imagekit.upload({
+        file: base64Image,
+        fileName: `${Date.now()}.png`,
+        folder: "clonegpt",
+      });
+    } catch (err) {
+      console.error("❌ ImageKit upload error:", err);
+      throw new Error("Image upload failed");
+    }
 
-        // Encode the prompt
-        const encodedPrompt = encodeURIComponent(prompt);
+    const reply = {
+      role: "assistant",
+      content: upload.url,
+      timestamp: Date.now(),
+      isImage: true,
+      isPublished: Boolean(isPublished),
+    };
 
-        //Construct ImageKit AI generation URL
-        const generatedImageUrl = `${process.env.IMAGEKIT_URL_ENDPOINT}/ik-genimg-prompt-${encodedPrompt}/clonegpt/${Date.now()}.png?tr=w-800,h-800`;
+    chat.messages.push(reply);
+    await chat.save();
 
-        //Trigger generation by fetching from ImageKit
-        const aiImageResponse = await axios.get(generatedImageUrl, {responseType: 'arraybuffer'});
+    return res.status(200).json({ success: true, reply });
 
-        // Convert to Base64
-        const base64Image = `data:image/png;base64,${Buffer.from(aiImageResponse.data, 'binary').toString('base64')}`;
-
-        // Upload to ImageKit Media Library
-        const uploadResponse = await imagekit.upload({
-            file: base64Image,
-            fileName: `${Date.now()}.png`,
-            folder: "clonegpt"
-        })
-
-        //create a reply and push to array of messages to backend:
-        const reply = {
-            role: 'assistant',
-            content: uploadResponse.url,
-            timestamp: Date.now(),
-            isImage: true,
-            isPublished,
-        }
-
-        res.json({success: true, reply});
-
-        chat.messages.push(reply);
-
-
-        // 5️⃣ Save chat
-        await chat.save();
-
-        // 6️⃣ Return updated chat
-        res.status(200).json({
-            success: true,
-            chat,
-        });
-
-
-
-    } catch (error) {
-        console.error("🔥 FULL ERROR OBJECT:", error);
-        console.error("🔥 ERROR MESSAGE:", error?.message);
-        console.error("🔥 ERROR STACK:", error?.stack);
-
+  } catch (error) {
+    console.error("🔥 FINAL IMAGE CONTROLLER ERROR:", error);
     return res.status(500).json({
-        success: false,
-        error: error?.message || "Unknown error",
+      success: false,
+      message: error.message,
     });
   }
-
-
-
-
-}
-
-
+};

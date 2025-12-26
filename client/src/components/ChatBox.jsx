@@ -5,7 +5,7 @@ import Message from './Message'
 import { Send, ImageIcon, MessageSquare, ChevronDown, Image } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion";
 import TypingDots from "./TypingDots";
-
+import toast from 'react-hot-toast';
 const ChatBox = () => {
 
   //use useRef hook to persist position of the last message so that the screen positions to the recent message
@@ -13,16 +13,18 @@ const ChatBox = () => {
 
 
   //initialize app context and message state here:
-  const { selectedChat, darkMode, setDarkMode, activeChatTitle } = useAppContext()
+  const { selectedChat, darkMode, setDarkMode, activeChatTitle, user, axios, token, setUser } = useAppContext()
 
   //state variables for messages and loading:
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(false)
+  const [prompt, setPrompt] = useState("")
   const [isPublished, setIsPublished] = useState(false)
   // const [loading, setLoading] = useState(true)
   const [input, setInput] = useState("");
   const [activateDropdown, setActivateDropdown] = useState(false)
   const [mode, setMode] = useState(() => localStorage.getItem("chatMode") || "text");
+
   
 
   //useEffect for loading the selected chat; useEffect only rerenders when the variable selectedChat changes:
@@ -55,6 +57,54 @@ const ChatBox = () => {
     }
 
   }, [messages])
+
+  //handle form submission for prompts in the chatbox below the page
+ const onSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!user) return toast("Please login");
+
+  const userPrompt = input.trim();
+  if (!userPrompt) return;
+
+  setLoading(true);
+  setInput("");
+
+  setMessages(prev => [
+    ...prev,
+    {
+      role: "user",
+      content: userPrompt,
+      timestamp: Date.now(),
+      isImage: false,
+    },
+  ]);
+
+  try {
+    const { data } = await axios.post(
+      `/api/message/${mode}`,
+      {
+        chatId: selectedChat._id,
+        prompt: userPrompt,
+        isPublished,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (data.success) {
+      setMessages(prev => [...prev, data.reply]);
+    }
+  } catch (err) {
+    toast.error(err.response?.data?.message || "Failed to send message");
+  } finally {
+    setLoading(false);
+  }
+};
 
   
 
@@ -119,7 +169,7 @@ const ChatBox = () => {
       
       {/**Input Messages Area */}
       <form
-        onSubmit={null}
+        onSubmit={onSubmit}
         className="flex items-center gap-3 p-4 border-t border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950"
       >
          {/* MODE SELECTOR DROPDOWN */}
@@ -188,6 +238,7 @@ const ChatBox = () => {
         <button
           type="submit"
           className="p-3 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition-colors"
+         
         >
           <Send size={18} />
         </button>
