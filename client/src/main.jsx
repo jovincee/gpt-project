@@ -8,10 +8,10 @@ import AnimatedRoutes from './Misc/AnimatedRoutes.jsx'
 
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
-  <AnimatedRoutes>
+
   <AppContextProvider>
           <App />    
   </AppContextProvider>
-  </AnimatedRoutes>
+
   </BrowserRouter>,
 )

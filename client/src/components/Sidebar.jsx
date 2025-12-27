@@ -64,7 +64,7 @@ const Sidebar = () => {
         stiffness: 300,
         damping: 30,
       }}
-      className="flex flex-col bg-gray-200 dark:bg-gray-800 text-white shadow-lg"
+      className="flex flex-col bg-gray-200 dark:bg-gray-800 text-black dark:text-white shadow-lg"
     >
         {/* Header + Toggle */}
       <div className="flex justify-between items-center p-4">

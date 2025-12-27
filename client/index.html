@@ -2,6 +2,10 @@
 <html lang="en">
   <head>
     <script>
+      const dark = localStorage.getItem("darkMode");
+  if (dark === "true") {
+    document.documentElement.classList.add("dark");
+  }
     (function () {
       const storedTheme = localStorage.getItem("darkMode");
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;

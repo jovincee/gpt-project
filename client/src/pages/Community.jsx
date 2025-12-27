@@ -14,6 +14,7 @@ const Community = () => {
   const [images, setImages] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(null);
+  const { darkMode } = useAppContext();
 
   const pageVariants = {
   hidden: { opacity: 0, y: 10 },
@@ -31,6 +32,18 @@ const Community = () => {
     fetchImages()
 
   },[])
+
+  useEffect(() => {
+  const root = document.documentElement;
+
+  if (darkMode) {
+    root.classList.add("dark");
+  } else {
+    root.classList.remove("dark");
+  }
+
+  localStorage.setItem("darkMode", JSON.stringify(darkMode));
+  }, [darkMode]);
 
 //need async function since it saves the image to the backend
 const handleSaveImage = async (image) => {

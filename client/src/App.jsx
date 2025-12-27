@@ -35,6 +35,7 @@ const App = () => {
         <div className='h-screen dark:text-white'>
 
         <div className='flex h-full'>
+        
           <Sidebar />
 
           {/**Main Content */}
