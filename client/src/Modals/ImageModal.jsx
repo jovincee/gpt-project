@@ -19,6 +19,7 @@ const ImageModal = ({ image, onClose, isPublished }) => {
   const [imageUrl, setImageUrl] = useState("")
   const [userName, setUserName] = useState("")
   const [isSavable, setIsSavable] = useState(false);
+  const [showToolTip, setShowToolTip] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const { user } = useAppContext();
   const location = useLocation();
@@ -67,37 +68,67 @@ const ImageModal = ({ image, onClose, isPublished }) => {
             onClick={(e) => e.stopPropagation()}
           >
 
-          {/**Bookmark button */}
-          <AnimatePresence>
-             {isSavable && isHovered && (
-              <motion.button
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.15 }}
-                className="absolute top-4 right-4 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full z-10"
+          {/* Bookmark button + tooltip */}
+        <AnimatePresence>
+          {isSavable && isHovered && (
+            <motion.div
+              className="absolute top-4 right-4 z-10"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.15 }}
+              onMouseEnter={() => setShowToolTip(true)}
+              onMouseLeave={() => setShowToolTip(false)}
+            >
+              {/* Bookmark Button */}
+              <button
+                className="relative bg-black/60 hover:bg-black/80 text-white p-2 rounded-full"
                 onClick={(e) => {
                   e.stopPropagation();
                   console.log("Bookmark clicked");
                 }}
               >
-              {isPublished ? (
-                <>
-                <Bookmark fill="currentColor" />
-                  <Check
-                    size={12}
-                    className="absolute bottom-1 right-1 bg-green-500 text-white rounded-full"
-                  />
-                </>
-                ):(
-                
-                <Bookmark size={20} className="cursor-pointer" />
-      
+                {isPublished ? (
+                  <>
+                    <Bookmark fill="currentColor" />
+                    <Check
+                      size={12}
+                      className="absolute bottom-1 right-1 bg-green-500 text-white rounded-full"
+                    />
+                  </>
+                ) : (
+                  <Bookmark size={20} className="cursor-pointer" />
                 )}
-                
-              </motion.button>
-            )}
-          </AnimatePresence>
+              </button>
+
+              {/* Tooltip */}
+              <AnimatePresence>
+                {showToolTip && (
+                  <motion.div
+                    initial={{ opacity: 0, x: 6 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 6 }}
+                    transition={{ duration: 0.15 }}
+                    className="
+                      absolute left-full ml-3
+                      top-1/2 -translate-y-1/2
+                      bg-gray-900 text-white text-xs
+                      px-3 py-1 rounded
+                      whitespace-nowrap
+                      shadow-lg
+                      pointer-events-none
+                    "
+                  >
+                    {isPublished ? "Saved" : "Save to collection"}
+
+                    {/* Tooltip arrow (Discord-style) */}
+                    <span className="absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-gray-900 rotate-45" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+  )}
+</AnimatePresence>
           
 
           {/* Image */}
