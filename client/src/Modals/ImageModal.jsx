@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Bookmark } from "lucide-react";
+import { X, Bookmark, Check } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
@@ -15,7 +15,7 @@ const imageVariants = {
   exit: { scale: 0.9, opacity: 0 },
 };
 
-const ImageModal = ({ image, onClose }) => {
+const ImageModal = ({ image, onClose, isPublished }) => {
   const [imageUrl, setImageUrl] = useState("")
   const [userName, setUserName] = useState("")
   const [isSavable, setIsSavable] = useState(false);
@@ -81,7 +81,20 @@ const ImageModal = ({ image, onClose }) => {
                   console.log("Bookmark clicked");
                 }}
               >
+              {isPublished ? (
+                <>
+                <Bookmark fill="currentColor" />
+                  <Check
+                    size={12}
+                    className="absolute bottom-1 right-1 bg-green-500 text-white rounded-full"
+                  />
+                </>
+                ):(
+                
                 <Bookmark size={20} className="cursor-pointer" />
+      
+                )}
+                
               </motion.button>
             )}
           </AnimatePresence>

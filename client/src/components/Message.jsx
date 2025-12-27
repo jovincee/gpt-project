@@ -52,7 +52,7 @@ const Message = ({key, message}) => {
             <span className='text-xs text-gray-400 dark:text-[#B1A6C0]'>{moment(message.timestamp).fromNow()}</span>
 
             </div>
-            <ImageModal image={selectedImage} onClose={() => setSelectedImage(null)} />
+            <ImageModal image={selectedImage} onClose={() => setSelectedImage(null)} isPublished={message.isPublished} />
     </motion.div>
   )
 }
