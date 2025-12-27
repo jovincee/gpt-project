@@ -14,7 +14,7 @@ const Community = () => {
   const [images, setImages] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(null);
-  const { darkMode } = useAppContext();
+  const { darkMode, publishedImages, fetchPublishedImages } = useAppContext();
 
   const pageVariants = {
   hidden: { opacity: 0, y: 10 },
@@ -24,7 +24,8 @@ const Community = () => {
 
   //need an async function since it communicates to the backend to fetch the images
   const fetchImages = async () => {
-    setImages(dummyPublishedImages)
+    const tempImg = await fetchPublishedImages();
+    setImages(publishedImages)
     setLoading(false)   //set loading to false; initially loading because we are trying to collect the images from the backend
   }
 

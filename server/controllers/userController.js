@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import jwt from 'jsonwebtoken'
+import Chat from "../models/Chat.js";
 
 
 // Generate JWT 
@@ -151,7 +152,7 @@ export const setPublishedImage = async (req, res) => {
  * @param {*} params 
  * @returns res.json with published images if successful; error message if not
  */
-export const getPublishedImages = async (params) => {
+export const getPublishedImages = async (req, res) => {
     try{
         const publishedImageMessages = await Chat.aggregate([
             { $unwind: "$messages" },

@@ -29,7 +29,7 @@ const ImageModal = ({ image, onClose, isPublished }) => {
     if (image?.imageUrl != undefined || location.pathname === '/community') {
       setImageUrl(image?.imageUrl);
       setIsSavable(false);
-      setUserName(image.userName);
+      setUserName(image?.userName);
       
     }
     else {

@@ -34,6 +34,7 @@ export const AppContextProvider = ({ children })=>{
     const [activeItem, setActiveItem] = useState("");
     const [token, setToken] = useState(localStorage.getItem("token") || null);
     const [loadingUser, setLoadingUser] = useState(true);
+    const [publishedImages, setPublishedImages] = useState([]);
     
     // delete chat:
     const deleteChat = async (e, chatId) => {
@@ -55,6 +56,28 @@ export const AppContextProvider = ({ children })=>{
 
         }
     }
+
+    const fetchPublishedImages = async () => {
+        if (!user || !token) {
+            toast.error("Login to see published images");
+            return false;
+        }
+        try {
+            const { data } = await axios.get("/api/user/published-images");
+            console.log(data.images)
+            if(data.success){
+                setPublishedImages(data.images);
+                return data.images;
+            }
+            else {
+                console.log(data.message)
+            }
+        } catch (error) {
+            toast.error(error.message)
+        }
+
+    }
+    
 
 
     const fetchUser = async () => {
@@ -202,7 +225,10 @@ export const AppContextProvider = ({ children })=>{
     }, [darkMode]);
 
     const value = {
-        navigate, user, setUser, fetchUser, chats, setChats, selectedChat, setSelectedChat, darkMode, setDarkMode, activeItem, setActiveItem, activeChatTitle, setActiveChatTitle, createNewChat, loadingUser, fetchUsersChats, token, setToken, axios, deleteChat
+        navigate, user, setUser, fetchUser, chats, setChats, selectedChat, setSelectedChat, 
+        darkMode, setDarkMode, activeItem, setActiveItem, activeChatTitle, setActiveChatTitle, 
+        createNewChat, loadingUser, fetchUsersChats, token, setToken, axios, deleteChat,
+        publishedImages, fetchPublishedImages
     }        //value is of datatype object to store data
     
     return (
