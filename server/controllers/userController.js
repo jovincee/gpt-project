@@ -96,11 +96,56 @@ export const getUser = async (req, res) => {
 
 }
 
+//API to update published image status from false to true:
+/** 1. Get chatId and imageUrl from req.body
+ * 2. Find chat by chatId and message with content=imageUrl and isImage=true
+ * 3. Update isPublished to true for that message
+ * 4. Return updated chat in response
+ * 5. Handle errors
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
+export const setPublishedImage = async (req, res) => {
+    try{
+        const { chatId, imageUrl } = req.body;
+
+        if (!chatId || !imageUrl){
+            return res.status(400).json({ success: false, message: "chatId and imageUrl are required" })
+        }
+
+        const updatedChat = await Chat.findByIdAndUpdate(
+            {
+                _id: chatId,
+                "messages.content": imageUrl,
+                "messages.isImage": true,  
+            },
+            {
+                $set: { "messages.$.isPublished": true }
+            },
+            { new: true
+            }
+        );
+
+        //check if updatedChat is null
+        if (!updatedChat){
+            return res.status(404).json({ success: false, message: "Chat or image message not found" })
+        }q
+
+    } catch (error){
+        return res.status(500).json({ success: false, message: error.message })
+    }
+
+
+
+}
+
 //API to get published images:
 /**
  * 1. Aggregate Chat collection to find messages with isImage and isPublished set to true
  * 2. Project necessary fields: imageUrl and userName
- * 3. Return images in responseq
+ * 3. Return images in response
  * 4. Handle errors
  * 
  * @param {*} params 
