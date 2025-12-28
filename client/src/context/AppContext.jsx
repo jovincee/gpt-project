@@ -57,6 +57,29 @@ export const AppContextProvider = ({ children })=>{
         }
     }
 
+    const setToPublished = async (e, chatId, imageUrl) => {
+        try {
+            e.stopPropagation();
+            const confirm = window.confirm("Are you sure you want to post this image?");
+            if (!confirm) return Promise.reject("Post cancelled by user");
+            const { data } = await axios.post(`/api/user/update-image-status/${chatId}`, {imageUrl}, {headers: {Authorization: `Bearer ${token}`}})
+            
+            
+            if (data.success) {
+                
+                toast.success("Image posted to community");
+              
+            }
+            else{
+              console.log(data.message)
+              toast.error(data.message)
+            }
+        } catch (error) {
+            console.log(error.message)
+            toast.error(error.message)
+        }
+    }
+
     const fetchPublishedImages = async () => {
         if (!user || !token) {
             toast.error("Login to see published images");
@@ -228,7 +251,7 @@ export const AppContextProvider = ({ children })=>{
         navigate, user, setUser, fetchUser, chats, setChats, selectedChat, setSelectedChat, 
         darkMode, setDarkMode, activeItem, setActiveItem, activeChatTitle, setActiveChatTitle, 
         createNewChat, loadingUser, fetchUsersChats, token, setToken, axios, deleteChat,
-        publishedImages, fetchPublishedImages
+        publishedImages, fetchPublishedImages, setToPublished
     }        //value is of datatype object to store data
     
     return (

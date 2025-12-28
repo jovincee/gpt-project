@@ -110,32 +110,51 @@ export const getUser = async (req, res) => {
  */
 export const setPublishedImage = async (req, res) => {
     try{
-        const { chatId, imageUrl } = req.body;
+        const { chatId } = req.params;
+        const { imageUrl } = req.body;
 
         if (!chatId || !imageUrl){
             return res.status(400).json({ success: false, message: "chatId and imageUrl are required" })
         }
 
-        const updatedChat = await Chat.findByIdAndUpdate(
+        console.log(`imageUrl: ${imageUrl}, chatId: ${chatId}`)
+
+        const updatedChat = await Chat.findOneAndUpdate(
+            { _id: chatId },
             {
-                _id: chatId,
-                "messages.content": imageUrl,
-                "messages.isImage": true,  
+                $set: { "messages.$[img].isPublished": true },
             },
             {
-                $set: { "messages.$.isPublished": true }
-            },
-            { new: true
+                arrayFilters: [
+                {
+                    "img.isImage": true,
+                    "img.content": imageUrl,
+                },
+                ],
+                new: true,
             }
         );
+
 
         //check if updatedChat is null
         if (!updatedChat){
             return res.status(404).json({ success: false, message: "Chat or image message not found" })
-        }q
+        }
+        else {
+            
+            return res.json({
+            success: true,
+            message: "Image published successfully",
+            });
+        }
 
     } catch (error){
-        return res.status(500).json({ success: false, message: error.message })
+        console.error("❌ setPublishedImage error:", error);
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+            stack: error.stack,
+        });
     }
 
 

@@ -3,6 +3,7 @@ import { X, Bookmark, Check } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const backdropVariants = {
   hidden: { opacity: 0 },
@@ -21,7 +22,7 @@ const ImageModal = ({ image, onClose, isPublished }) => {
   const [isSavable, setIsSavable] = useState(false);
   const [showToolTip, setShowToolTip] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const { user } = useAppContext();
+  const { user, activeItem, setToPublished } = useAppContext();
   const location = useLocation();
   
    //useEffect for checking if the image is either fetched from the temporary list of community images or user-generated from API
@@ -84,8 +85,11 @@ const ImageModal = ({ image, onClose, isPublished }) => {
               <button
                 className="relative bg-black/60 hover:bg-black/80 text-white p-2 rounded-full"
                 onClick={(e) => {
-                  e.stopPropagation();
-                  console.log("Bookmark clicked");
+                  //if image is not published, then ask user if they want to publish image
+                  if (!isPublished){
+                    toast.promise(setToPublished(e, activeItem, imageUrl), {loading: 'Publishing Image', success: 'Image Published', error: 'User cancelled publish'})
+                  }
+               
                 }}
               >
                 {isPublished ? (
@@ -119,7 +123,7 @@ const ImageModal = ({ image, onClose, isPublished }) => {
                       pointer-events-none
                     "
                   >
-                    {isPublished ? "Saved" : "Save to collection"}
+                    {isPublished ? "Posted" : "Post to Community"}
 
                     {/* Tooltip arrow (Discord-style) */}
                     <span className="absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-gray-900 rotate-45" />

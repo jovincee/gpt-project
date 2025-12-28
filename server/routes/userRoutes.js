@@ -10,7 +10,7 @@ userRouter.post('/register', registerUser);
 userRouter.post('/login', loginUser);
 userRouter.get('/data', protect, getUser);
 userRouter.get('/published-images', getPublishedImages);
-userRouter.post('/update-image-status', setPublishedImage);
+userRouter.post('/update-image-status/:chatId', protect, setPublishedImage);
 
 
 export default userRouter;

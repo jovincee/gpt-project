@@ -5,6 +5,7 @@ import { LogOut, MessageCircle, CircleUser, Moon, Sun, User, ChevronLeft, Chevro
 import SidebarItem from './SidebarItem';
 import moment from 'moment';
 import { nanoid } from "nanoid";
+import { use } from 'react';
 
 
 
@@ -49,6 +50,9 @@ const Sidebar = () => {
     }, [chats]
 
   )
+
+  //test useEffect when user changes activeItem:
+  useEffect(() => {console.log(activeItem)}, [activeItem])
   
   
   return (
@@ -116,7 +120,7 @@ const Sidebar = () => {
             isActive={activeItem === item.id}
 
             clickAction={async () => {
-              console.log("clicked");
+              
               
               navigate(item.route);
               if (item.id === 'newChat') {
@@ -171,6 +175,7 @@ const Sidebar = () => {
               navigate('/');
               setSelectedChat(chat);
               setActiveItem(chat._id);
+              
               setActiveChatTitle(hasMessages ? firstMessage : "New Chat");
             }}
           />
