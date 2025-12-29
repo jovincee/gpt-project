@@ -32,7 +32,7 @@ const Sidebar = () => {
   //top sidebar items:
   const menuItems = [
   { icon: <Plus size={20} className="text-black dark:text-gray-500" />, id: 'newChat', text: "New Chat", caption: null, route: '/' },
-  { icon: <User size={20} className="text-black dark:text-gray-500" />, id: nanoid(),  text: "Profile", caption: null, route: '/', clickAction: {} },
+
   ]
 
   //bottom sidebar items:
