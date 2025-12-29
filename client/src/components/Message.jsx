@@ -5,13 +5,48 @@ import moment from 'moment';
 import Markdown from 'react-markdown';
 import Prism from 'prismjs';
 import ImageModal from '../Modals/ImageModal';
+import { useRef } from 'react';
 
-const Message = ({key, message}) => {
+const TYPING_SPEED = 18; // ms per character
+
+const Message = ({message, isLastMessage}) => {
   const [selectedImage, setSelectedImage] = useState(null);
+  const [displayedText, setDisplayedText] = useState(
+  message.role === "assistant" && !message.isImage ? "" : message.content);
+  const shouldType = message.role === "assistant" && message.isNew === true && !message.isImage && isLastMessage;
 
-  useEffect(()=>{
-    Prism.highlightAll()
-  }, [message.content])
+  const hasTypedRef = useRef(false);
+  // Typing animation
+  useEffect(() => {
+    if (message.isImage) return; // No typing for images
+    if (!shouldType) {
+      setDisplayedText(message.content);      
+      return;
+    };
+
+    let index = 0;
+    hasTypedRef.current = true;
+
+    const interval = setInterval(() => {
+      setDisplayedText((prev) => prev + message.content[index]);
+      index++;
+
+      if (index >= message.content.length) {
+        clearInterval(interval);
+        message.isNew = false; // Reset isNew flag after typing
+      }
+    }, TYPING_SPEED);
+
+    return () => clearInterval(interval);
+  }, [message.content, shouldType]);
+
+
+  // Highlight code blocks AFTER typing finishes
+  useEffect(() => {
+    if (displayedText === message.content) {
+      Prism.highlightAll();
+    }
+  }, [displayedText, message.content]);
   
   return (
     <motion.div
@@ -31,7 +66,18 @@ const Message = ({key, message}) => {
               }`}
             >
             
-             {!message.isImage && <div className='text-sm dark:text-priamry reset-tw'><Markdown>{message.content}</Markdown></div>}
+             {!message.isImage && 
+              <div className='text-sm dark:text-priamry reset-tw'>
+                <Markdown>
+                  {displayedText}
+                </Markdown>
+                {/* Cursor while typing */}
+                {shouldType && displayedText.length < message.content.length && (
+                  <span className="inline-block ml-1 animate-pulse">▋</span>
+                )}
+
+              </div>
+             }
              {message.isImage && (
               <img 
                 src={message.content}

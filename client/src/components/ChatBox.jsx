@@ -24,6 +24,8 @@ const ChatBox = () => {
   const [input, setInput] = useState("");
   const [activateDropdown, setActivateDropdown] = useState(false)
   const [mode, setMode] = useState(() => localStorage.getItem("chatMode") || "text");
+  
+  
 
 
   
@@ -58,6 +60,7 @@ const ChatBox = () => {
     }
 
   }, [messages])
+
 
   //handle form submission for prompts in the chatbox below the page
  const onSubmit = async (e) => {
@@ -106,7 +109,7 @@ const ChatBox = () => {
     );
 
     if (data.success) {
-      setMessages(prev => [...prev, data.reply]);     //append to the list of messages
+      setMessages(prev => [...prev, {...data.reply, isNew: true}]);     //append to the list of messages; set a temporary isNew flag to true
     }
   } catch (err) {
     toast.error(err.response?.data?.message || "Failed to send message");
@@ -153,7 +156,7 @@ const ChatBox = () => {
 
         {/**If message is not empty, then begin rendering the messages */}
         {messages && messages.map((message, i) => ( 
-          <Message key={i} message={message}/>         
+          <Message key={i} message={message} isLastMessage={i===messages.length-1}/>         
         ))}
 
       </div>
