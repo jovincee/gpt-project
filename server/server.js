@@ -6,11 +6,6 @@ import userRouter from './routes/userRoutes.js'
 import chatRouter from './routes/chatRoutes.js'
 import messageRouter from './routes/messageRoutes.js'
 
-const allowedOrigins = [
-  "https://gpt-project-three.vercel.app",
-  "http://localhost:3000",
-  "http://localhost:5173",
-];
 
 const app = express()
 
@@ -32,7 +27,7 @@ app.use(cors({
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
+
 }));
 
 
