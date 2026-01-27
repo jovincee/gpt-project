@@ -33,15 +33,12 @@ app.use(
     credentials: true,
   })
 );
+
+app.options('*', cors()); // Enable pre-flight for all routes
+
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
-// ✅ SAFE OPTIONS handler (no crash)
-app.use((req, res, next) => {
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(204);
-  }
-  next();
-});
+
 
 
 //routes
