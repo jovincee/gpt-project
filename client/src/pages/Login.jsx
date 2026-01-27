@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAppContext } from '../context/AppContext'
 import { toast } from 'react-hot-toast'
+import api from '../lib/api'
 
 const Login = () => {
   const [state, setState] = useState("login");
@@ -15,7 +16,7 @@ const Login = () => {
     const url = state === "login" ? "/api/user/login" : "/api/user/register";
 
     try {
-        const {data} = await axios.post(url, {name, email, password})
+        const {data} = await api.post(url, {name, email, password})
         if (data.success){
             setToken(data.token);
             localStorage.setItem("token", data.token);
