@@ -30,7 +30,13 @@ app.use(cors({
 }));
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
-app.options("*", cors());
+// ✅ SAFE OPTIONS handler (no crash)
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+  next();
+});
 
 
 //routes
