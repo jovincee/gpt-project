@@ -2,15 +2,8 @@ import { createContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { dummyUserData, dummyChats } from "../assets/assets";
 import { useState, useEffect, useContext } from "react";
-import axios from "axios";
+import api from "../lib/api";
 import { toast } from "react-hot-toast";
-
-
-const API_URL = import.meta.env.VITE_SERVER_URL;
-
-const axiosInstance = axios.create({
-  baseURL: API_URL,
-});
 
 
 /**
@@ -45,12 +38,16 @@ export const AppContextProvider = ({ children })=>{
 
     // inject token automatically:
     useEffect(() => {
-    axiosInstance.interceptors.request.use((config) => {
+    const interceptor = api.interceptors.request.use((config) => {
         if (token) {
         config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
     });
+
+    return () => {
+        api.interceptors.request.eject(interceptor);
+    };
     }, [token]);
     
     // delete chat:
@@ -60,7 +57,7 @@ export const AppContextProvider = ({ children })=>{
         e.stopPropagation();
         const confirm = window.confirm("Are you sure you want to delete this chat?");
         if(!confirm) return Promise.reject("Deletion cancelled by user");
-        const {data} = await axiosInstance.delete(`/api/chat/delete/${chatId}`, {headers: {Authorization: `Bearer ${token}`}})
+        const {data} = await api.delete(`/api/chat/delete/${chatId}`, {headers: {Authorization: `Bearer ${token}`}})
         console.log(data);
         if(data.success){ 
             console.log("chat deleted")
@@ -79,7 +76,7 @@ export const AppContextProvider = ({ children })=>{
             e.stopPropagation();
             const confirm = window.confirm("Are you sure you want to post this image?");
             if (!confirm) return Promise.reject("Post cancelled by user");
-            const { data } = await axiosInstance.post(`/api/user/update-image-status/${chatId}`, {imageUrl}, {headers: {Authorization: `Bearer ${token}`}})
+            const { data } = await api.post(`/api/user/update-image-status/${chatId}`, {imageUrl}, {headers: {Authorization: `Bearer ${token}`}})
             
             
             if (data.success) {
@@ -103,7 +100,7 @@ export const AppContextProvider = ({ children })=>{
             return false;
         }
         try {
-            const { data } = await axiosInstance.get("/api/user/published-images");
+            const { data } = await api.get("/api/user/published-images");
             console.log(data.images)
             if(data.success){
                 setPublishedImages(data.images);
@@ -122,7 +119,7 @@ export const AppContextProvider = ({ children })=>{
 
     const fetchUser = async () => {
         try {
-            const { data } = await axiosInstance.get("/api/user/data", {headers: {Authorization: `Bearer ${token}`}})
+            const { data } = await api.get("/api/user/data", {headers: {Authorization: `Bearer ${token}`}})
             if(data.success){
                 setUser(data.user)
             } else {
@@ -147,7 +144,7 @@ export const AppContextProvider = ({ children })=>{
         }
 
         try {
-            await axiosInstance.post(
+            await api.post(
             '/api/chat/create',
             null, // ✅ IMPORTANT
             {
@@ -178,7 +175,7 @@ export const AppContextProvider = ({ children })=>{
   if (!user || !token) return;
 
   try {
-    const { data } = await axiosInstance.get(
+    const { data } = await api.get(
       '/api/chat/all',
       {
         headers: {
@@ -208,7 +205,7 @@ export const AppContextProvider = ({ children })=>{
     if (!created) return;
 
     // ✅ ONE controlled refetch
-    const refreshed = await axiosInstance.get(
+    const refreshed = await api.get(
       '/api/chat/all',
       {
         headers: {
@@ -267,7 +264,7 @@ export const AppContextProvider = ({ children })=>{
     const value = {
         navigate, user, setUser, fetchUser, chats, setChats, selectedChat, setSelectedChat, 
         darkMode, setDarkMode, activeItem, setActiveItem, activeChatTitle, setActiveChatTitle, 
-        createNewChat, loadingUser, fetchUsersChats, token, setToken, axios: axiosInstance, deleteChat,
+        createNewChat, loadingUser, fetchUsersChats, token, setToken, api, deleteChat,
         publishedImages, fetchPublishedImages, setToPublished
     }        //value is of datatype object to store data
     
