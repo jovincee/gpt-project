@@ -14,7 +14,7 @@ const Login = () => {
     e.preventDefault();
     // create API url
     const url = state === "login" ? "/api/user/login" : "/api/user/register";
-
+    console.log(url);
     try {
         const {data} = await api.post(url, {name, email, password})
         if (data.success){
