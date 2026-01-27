@@ -30,6 +30,7 @@ app.use(cors({
 }));
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
+app.options("*", cors());
 
 
 //routes
@@ -37,6 +38,7 @@ app.get('/', (req, res) => res.send('Server is live!'))
 app.use('/api/user', userRouter)
 app.use('/api/chat', chatRouter)
 app.use('/api/message', messageRouter)
+
 
 const PORT = process.env.PORT || 3000
 
