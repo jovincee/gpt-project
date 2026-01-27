@@ -19,6 +19,10 @@ const app = express()
 await connectDB()
 
 
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }));
+
+
 //middleware
 // Middleware
 app.use(cors({
@@ -32,8 +36,7 @@ app.use(cors({
 }));
 
 
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }));
+
 
 
 
