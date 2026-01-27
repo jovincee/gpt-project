@@ -12,6 +12,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("BASE URL:", import.meta.env.VITE_SERVER_URL);
     // create API url
     const url = state === "login" ? "/api/user/login" : "/api/user/register";
     console.log(url);
