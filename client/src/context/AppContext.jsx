@@ -146,7 +146,7 @@ export const AppContextProvider = ({ children })=>{
         try {
             await api.post(
             '/api/chat/create',
-            null, // ✅ IMPORTANT
+            {}, // ✅ IMPORTANT
             {
                 headers: {
                 Authorization: `Bearer ${token}`,
