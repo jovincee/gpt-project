@@ -20,9 +20,12 @@ await connectDB()
 app.use(cors({
   origin: [
     "http://localhost:3000",
-    "https://gpt-project-three.vercel.app/"
+    "https://gpt-project-three.vercel.app/",
+    "https://gpt-project-35dw0bmt4-jovincees-projects.vercel.app",
+    "https://gpt-project-35dw0bmt4-jovincees-projects.vercel.app"
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
 app.use(express.json())
