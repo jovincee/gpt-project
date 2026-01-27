@@ -20,18 +20,18 @@ app.use(express.urlencoded({ extended: true }));
 
 //middleware
 // Middleware
-app.use(cors({
-  origin: [
-    "https://gpt-project-three.vercel.app",
-    "https://gpt-project-gsvjr27w-jovincees-projects.vercel.app"
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+// app.use(cors({
+//   origin: [
+//     "https://gpt-project-three.vercel.app",
+//     "https://gpt-project-gsvjr27w-jovincees-projects.vercel.app"
+//   ],
+//   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//   allowedHeaders: ["Content-Type", "Authorization"],
 
-}));
+// }));
 
 
-
+app.use(cors());
 
 
 
