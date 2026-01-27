@@ -6,6 +6,7 @@ import { Send, ImageIcon, MessageSquare, ChevronDown, Image } from "lucide-react
 import { motion, AnimatePresence } from "framer-motion";
 import TypingDots from "./TypingDots";
 import toast from 'react-hot-toast';
+import api from '../lib/api'
 const ChatBox = () => {
 
   //use useRef hook to persist position of the last message so that the screen positions to the recent message
@@ -92,8 +93,8 @@ const ChatBox = () => {
 
 
   try {
-   
-    const { data } = await axios.post(
+   // Send and save prompt to backend with its appropriate HTTP headers
+    const { data } = await api.post(
       `/api/message/${mode}`,
       {
         chatId: selectedChat._id,
