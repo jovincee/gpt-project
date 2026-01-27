@@ -23,18 +23,15 @@ await connectDB()
 // Middleware
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: "https://gpt-project-three.vercel.app",
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
-app.options('*', cors()); // Enable pre-flight for all routes
+
+
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
